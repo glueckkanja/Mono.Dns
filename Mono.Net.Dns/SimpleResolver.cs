@@ -27,6 +27,7 @@ using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
+using System.Linq;
 
 namespace Mono.Net.Dns {
 #if !NET_2_0
@@ -486,7 +487,11 @@ namespace Mono.Net.Dns {
 		void InitFromSystem ()
 		{
 			List<IPEndPoint> eps = new List<IPEndPoint> ();
-			foreach (NetworkInterface iface in NetworkInterface.GetAllNetworkInterfaces ()) {
+            var ifaces = NetworkInterface.GetAllNetworkInterfaces()
+                .OrderByDescending(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet) // prefer Ethernet
+                .OrderByDescending(x => x.OperationalStatus == OperationalStatus.Up); // prefer Up
+
+		    foreach (NetworkInterface iface in ifaces) {
 				if (NetworkInterfaceType.Loopback == iface.NetworkInterfaceType)
 					continue;
 
